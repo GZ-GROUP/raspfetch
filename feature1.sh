@@ -1,3 +1,3 @@
+hostname
 uname -a
 uptime
-hostname
