@@ -1,27 +1,24 @@
 #!/usr/bin/env python3
-import asyncio
-import subprocess
-from dataclasses import dataclass
-
 from __future__ import annotations
 
+import asyncio
 import os
+import subprocess
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import Container, Horizontal, Vertical
 from textual.markup import escape
 from textual.screen import ModalScreen
 from textual.theme import Theme
-from textual.widgets import Input, OptionList, RichLog, Static
-from textual.widgets import Header, Footer, Button, Label, LoadingIndicator, Static, OptionList
+from textual.widgets import Button, Input, Label, LoadingIndicator, OptionList, RichLog, Static
 from textual.widgets.option_list import Option
 
 # --------------------------------------------------------------------------
 # Paleta Raspberry Pi
 # --------------------------------------------------------------------------
-RASPBERRY = "#C51A4A"   # rojo frambuesa del logo
-LEAF = "#75A928"        # verde de la hoja
+RASPBERRY = "#C51A4A"
+LEAF = "#75A928"
 
 THEME = Theme(
     name="raspberry",
@@ -39,7 +36,7 @@ THEME = Theme(
 )
 
 # --------------------------------------------------------------------------
-# Logo estilo opencode: letras de bloque en 3 filas, mitad 1 color / mitad 2
+# Logo estilo opencode: letras de bloque en 3 filas.
 # --------------------------------------------------------------------------
 FONT = {
     "R": ["█▀▀▄", "█▀▀▄", "▀  ▀"],
@@ -72,78 +69,102 @@ def build_logo() -> str:
 
 
 # --------------------------------------------------------------------------
-# Datos de las funciones (tabla de requerimientos)
-# `ask`: None = ejecuta directo | "text" = pide texto | "choice" = pide opción
-# `gauge`: indicador que se muestra al ejecutar (None = solo panel Info)
+# Datos de las funciones
 # --------------------------------------------------------------------------
 FUNCTIONS = [
-    dict(name="Información del sistema",
-         desc="Muestra nombre del equipo, versión del kernel y tiempo de funcionamiento.",
-         cmds=["hostname", "uname -r", "uptime -p"], ask=None, gauge=None),
-    dict(name="Diagnóstico de memoria",
-         desc="Consulta la memoria RAM total, utilizada y disponible.",
-         cmds=["free -h"], ask=None, gauge="#mem"),
-    dict(name="Diagnóstico de almacenamiento",
-         desc="Muestra el espacio utilizado y disponible en los sistemas de archivos.",
-         cmds=["df -h"], ask=None, gauge="#disk"),
-    dict(name="Configuración de red",
-         desc="Consulta interfaces de red, direcciones IP y rutas configuradas.",
-         cmds=["ip -br addr", "ip route"], ask=None, gauge=None),
-    dict(name="Prueba de conectividad",
-         desc="Solicita la IP de otro equipo de la LAN y comprueba si responde.",
-         cmds=["ping -c 4 <ip>"], ask="text", gauge=None,
-         prompt="IP del equipo a probar:", placeholder="192.168.1.1"),
-    dict(name="Temperatura del procesador",
-         desc="Muestra la temperatura en °C o indica que el sensor no está disponible.",
-         cmds=["vcgencmd measure_temp"], ask=None, gauge="#temp"),
-    dict(name="Procesos activos",
-         desc="Muestra procesos en ejecución e identifica su consumo de recursos.",
-         cmds=["ps aux --sort=-%cpu | head"], ask=None, gauge=None),
-    dict(name="Creación de directorios",
-         desc="Solicita un nombre y crea una carpeta dentro del directorio de trabajo del proyecto.",
-         cmds=["mkdir <nombre>"], ask="text", gauge=None,
-         prompt="Nombre del directorio:", placeholder="mi_carpeta"),
-    dict(name="Configuración de permisos",
-         desc="Permite elegir entre solo lectura o lectura y escritura para el propietario de un archivo de prueba.",
-         cmds=["chmod 400 <archivo>", "chmod 600 <archivo>"], ask="choice", gauge=None,
-         prompt="Permisos del propietario:",
-         choices=["Solo lectura (400)", "Lectura y escritura (600)"]),
-    dict(name="Informe de diagnóstico",
-         desc="Guarda en un archivo de texto un resumen del estado del equipo: fecha, usuario y nombre de la Raspberry Pi.",
-         cmds=["date", "whoami", "hostname"], ask=None, gauge=None),
-from textual.screen import ModalScreen
-from textual.containers import Container
-from textual.widgets import Input
-from textual import on, work
-
-@dataclass
-class menuItem:
-    name: str
-    cmd: str
-    interactive: bool = False
-    input_required: bool = False
-    prompt: str = ""
-
-COMMANDS = [
-    menuItem("System Info", "./feature1.sh"),
-    menuItem("RAM Usage", "./feature2.sh"),
-    menuItem("Disk Usage", "./feature3.sh"),
-    menuItem("Network Info", "./feature4.sh"),
-    menuItem("Ping Host", "./feature5.sh", input_required=True, prompt="Enter host to ping"),
-    menuItem("CPU Temp", "./feature6.sh"),
-    menuItem("Running Processes", "./feature7.sh"),
-    menuItem("Create Directory", "./feature8.sh", input_required=True, prompt="Enter directory name"),
-    menuItem("Generate Report", "./feature10.sh")
+    {
+        "name": "Información del sistema",
+        "desc": "Muestra nombre del equipo, versión del kernel y tiempo de funcionamiento.",
+        "cmds": ["hostname", "uname -a", "uptime"],
+        "ask": None,
+        "gauge": None,
+        "script": "./feature1.sh",
+    },
+    {
+        "name": "Diagnóstico de memoria",
+        "desc": "Consulta la memoria RAM total, utilizada y disponible.",
+        "cmds": ["free -h"],
+        "ask": None,
+        "gauge": "#mem",
+        "script": "./feature2.sh",
+    },
+    {
+        "name": "Diagnóstico de almacenamiento",
+        "desc": "Muestra el espacio utilizado y disponible en los sistemas de archivos.",
+        "cmds": ["df -h"],
+        "ask": None,
+        "gauge": "#disk",
+        "script": "./feature3.sh",
+    },
+    {
+        "name": "Configuración de red",
+        "desc": "Consulta interfaces de red, direcciones IP y rutas configuradas.",
+        "cmds": ["ip -br addr", "ip route"],
+        "ask": None,
+        "gauge": None,
+        "script": "./feature4.sh",
+    },
+    {
+        "name": "Prueba de conectividad",
+        "desc": "Solicita la IP de otro equipo de la LAN y comprueba si responde.",
+        "cmds": ["ping -c 4 <ip>"],
+        "ask": "text",
+        "gauge": None,
+        "script": "./feature5.sh",
+        "prompt": "IP del equipo a probar:",
+        "placeholder": "192.168.1.1",
+    },
+    {
+        "name": "Temperatura del procesador",
+        "desc": "Muestra la temperatura en °C o indica que el sensor no está disponible.",
+        "cmds": ["vcgencmd measure_temp"],
+        "ask": None,
+        "gauge": "#temp",
+        "script": "./feature6.sh",
+    },
+    {
+        "name": "Procesos activos",
+        "desc": "Muestra procesos en ejecución e identifica su consumo de recursos.",
+        "cmds": ["ps aux --sort=-%cpu | head"],
+        "ask": None,
+        "gauge": None,
+        "script": "./feature7.sh",
+    },
+    {
+        "name": "Creación de directorios",
+        "desc": "Solicita un nombre y crea una carpeta dentro del directorio de trabajo del proyecto.",
+        "cmds": ["mkdir <nombre>"],
+        "ask": "text",
+        "gauge": None,
+        "script": "./feature8.sh",
+        "prompt": "Nombre del directorio:",
+        "placeholder": "mi_carpeta",
+    },
+    {
+        "name": "Configuración de permisos",
+        "desc": "Permite elegir entre solo lectura o lectura y escritura para el propietario de un archivo de prueba.",
+        "cmds": ["chmod 400 <archivo>", "chmod 600 <archivo>"],
+        "ask": "choice",
+        "gauge": None,
+        "script": "./feature9.sh",
+        "prompt": "Permisos del propietario:",
+        "choices": ["Solo lectura (400)", "Lectura y escritura (600)"],
+    },
+    {
+        "name": "Informe de diagnóstico",
+        "desc": "Guarda en un archivo de texto un resumen del estado del equipo: fecha, usuario y nombre de la Raspberry Pi.",
+        "cmds": ["date", "whoami", "hostname"],
+        "ask": None,
+        "gauge": None,
+        "script": "./feature10.sh",
+    },
 ]
 
 GAUGES = ("#mem", "#disk", "#temp")
 
 
-# --------------------------------------------------------------------------
-# Helpers de dibujo
-# --------------------------------------------------------------------------
 def text_bar(pct: float, width: int = 20) -> str:
-    """[########............]  como en el boceto."""
+    """Dibuja una barra de progreso tipo [########............]."""
     filled = round(width * max(0.0, min(pct, 100.0)) / 100)
     return f"[{'#' * filled}{'.' * (width - filled)}]"
 
@@ -159,15 +180,13 @@ def thermometer(temp: float | None, rows: int = 5) -> str:
     return "\n".join(lines)
 
 
-# --------------------------------------------------------------------------
-# Diálogos modales (solo aparecen al activar el comando que los necesita)
-# --------------------------------------------------------------------------
 class TextPrompt(ModalScreen[str | None]):
     BINDINGS = [Binding("escape", "dismiss(None)", "Cancelar")]
 
     def __init__(self, prompt: str, placeholder: str = "") -> None:
         super().__init__()
-        self.prompt, self.placeholder = prompt, placeholder
+        self.prompt = prompt
+        self.placeholder = placeholder
 
     def compose(self) -> ComposeResult:
         with Vertical(classes="dialog"):
@@ -183,7 +202,20 @@ class ChoicePrompt(ModalScreen[str | None]):
     BINDINGS = [Binding("escape", "dismiss(None)", "Cancelar")]
 
     def __init__(self, prompt: str, choices: list[str]) -> None:
-#TODO: Add InputBox
+        super().__init__()
+        self.prompt = prompt
+        self.choices = choices
+
+    def compose(self) -> ComposeResult:
+        with Vertical(classes="dialog"):
+            yield Static(self.prompt)
+            yield OptionList(*[Option(choice, id=str(idx)) for idx, choice in enumerate(self.choices)])
+            yield Static("[dim]↑↓ elegir · enter aceptar · esc cancelar[/]")
+
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
+        self.dismiss(self.choices[event.option_index])
+
+
 class InputBox(ModalScreen[str | None]):
     def __init__(self, message: str) -> None:
         super().__init__()
@@ -198,34 +230,12 @@ class InputBox(ModalScreen[str | None]):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "accept":
-            value = self.query_one("#user_input", Input).value
-            self.dismiss(value)
+            value = self.query_one("#user_input", Input).value.strip()
+            self.dismiss(value or None)
         else:
             self.dismiss(None)
 
-#Boilerplate code for a simple modal message box
-class MessageBox(ModalScreen[bool]):
-    """Un cuadro de mensaje modal simple de tipo Sí/No."""
 
-    def __init__(self, message: str) -> None:
-        super().__init__()
-        self.prompt, self.choices = prompt, choices
-
-    def compose(self) -> ComposeResult:
-        with Vertical(classes="dialog"):
-            yield Static(self.prompt)
-            yield OptionList(*self.choices)
-            yield Static("[dim]↑↓ elegir · enter aceptar · esc cancelar[/]")
-
-    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
-        self.dismiss(self.choices[event.option_index])
-
-
-# --------------------------------------------------------------------------
-# App principal
-# --------------------------------------------------------------------------
-class Raspfetch(App):
-    TITLE = "RASPFETCH"
 class LoadingBox(ModalScreen[None]):
     def __init__(self, message: str) -> None:
         super().__init__()
@@ -236,7 +246,24 @@ class LoadingBox(ModalScreen[None]):
             yield LoadingIndicator()
             yield Label(self.message)
 
+
+class MessageBox(ModalScreen[None]):
+    def __init__(self, message: str) -> None:
+        super().__init__()
+        self.message = message
+
+    def compose(self) -> ComposeResult:
+        with Vertical(classes="dialog"):
+            yield Static(self.message)
+            yield Button("Cerrar", id="close")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "close":
+            self.dismiss(None)
+
+
 class RASPFETCH(App):
+    TITLE = "RASPFETCH"
 
     CSS = """
     Screen { background: $background; align-horizontal: center; }
@@ -248,7 +275,6 @@ class RASPFETCH(App):
 
     #body { height: 1fr; width: 100%; max-width: 150; padding: 0 2; }
 
-    /* Visibles desde el inicio: menú + descripción */
     #menu, #detail {
         background: $surface; border: round $primary; padding: 0 1;
     }
@@ -260,13 +286,12 @@ class RASPFETCH(App):
     }
     #menu > .option-list--option { padding: 0 1; }
 
-    /* Ocultos hasta ejecutar un comando */
     #info {
         display: none; width: 2fr;
         background: $surface; border: round $secondary; padding: 0 1;
     }
     #gauges { display: none; width: 30; }
-    .gauge  { display: none; background: $surface; border: round $secondary; padding: 0 1; }
+    .gauge { display: none; background: $surface; border: round $secondary; padding: 0 1; }
     #mem, #disk { height: 5; }
     #temp { height: 12; }
 
@@ -274,7 +299,6 @@ class RASPFETCH(App):
     #cwd  { width: 1fr; color: $text-muted; }
     #hints { width: auto; }
 
-    /* Diálogos */
     ModalScreen { align: center middle; background: $background 70%; }
     .dialog {
         width: 50; height: auto; padding: 1 2;
@@ -292,12 +316,11 @@ class RASPFETCH(App):
         Binding("q", "quit", "Salir", show=False),
     ]
 
-    # ---- composición -----------------------------------------------------
     def compose(self) -> ComposeResult:
         yield Static(build_logo(), id="logo")
         with Horizontal(id="body"):
             yield OptionList(
-                *[Option(f"{i}. {f['name']}", id=str(i - 1)) for i, f in enumerate(FUNCTIONS, 1)],
+                *[Option(f"{index + 1}. {func['name']}", id=str(index)) for index, func in enumerate(FUNCTIONS)],
                 id="menu",
             )
             yield Static(id="detail")
@@ -307,7 +330,7 @@ class RASPFETCH(App):
                 yield Static(id="disk", classes="gauge")
                 yield Static(id="temp", classes="gauge")
         with Horizontal(id="statusbar"):
-            yield Static(f"{os.getcwd()}", id="cwd")
+            yield Static(os.getcwd(), id="cwd")
             yield Static(
                 "[b]↑↓[/b] [dim]navegar[/]  [b]enter[/b] [dim]ejecutar[/]  "
                 "[b]esc[/b] [dim]cerrar[/]  [b]q[/b] [dim]salir[/]",
@@ -326,7 +349,6 @@ class RASPFETCH(App):
         self.query_one("#menu", OptionList).focus()
         self.show_detail(0)
 
-    # ---- navegación (↑ ↓ Enter) -------------------------------------------
     def action_menu_up(self) -> None:
         self.query_one("#menu", OptionList).action_cursor_up()
 
@@ -337,111 +359,105 @@ class RASPFETCH(App):
         self.query_one("#menu", OptionList).action_select()
 
     def action_close_panels(self) -> None:
-        """Vuelve a la vista inicial: solo logo, menú y descripción."""
         self.query_one("#info").display = False
         self.query_one("#gauges").display = False
 
-    # ---- panel de descripción --------------------------------------------
     def show_detail(self, index: int) -> None:
-        f = FUNCTIONS[index]
-        cmds = "\n".join(f"  [b {LEAF}]$[/] {escape(c)}" for c in f["cmds"])
+        func = FUNCTIONS[index]
+        cmds = "\n".join(f"  [b {LEAF}]$[/] {escape(command)}" for command in func["cmds"])
         self.query_one("#detail", Static).update(
-            f"[b]{f['name']}[/]\n\n{f['desc']}\n\n[b {RASPBERRY}]Comandos[/]\n{cmds}"
+            f"[b]{func['name']}[/]\n\n{func['desc']}\n\n[b {RASPBERRY}]Comandos[/]\n{cmds}"
         )
 
     def on_option_list_option_highlighted(self, event: OptionList.OptionHighlighted) -> None:
-        if event.option_list.id == "menu" and event.option.id is not None:
+        if event.option_list.id == "menu" and event.option is not None and event.option.id is not None:
             self.show_detail(int(event.option.id))
 
-    # ---- indicadores (datos de ejemplo; conectar a la lógica real) -------
     def refresh_gauge(self, which: str) -> None:
         if which == "#mem":
-            pct, txt = 42.0, "1.6 GB / 3.8 GB"          # TODO: datos reales
+            pct, txt = 42.0, "1.6 GB / 3.8 GB"
             self.query_one(which, Static).update(f"{escape(text_bar(pct))}\n{txt}")
         elif which == "#disk":
-            pct, txt = 63.0, "18 GB / 29 GB"            # TODO: datos reales
+            pct, txt = 63.0, "18 GB / 29 GB"
             self.query_one(which, Static).update(f"{escape(text_bar(pct))}\n{txt}")
         elif which == "#temp":
-            temp = 52.1                                  # TODO: None si no hay sensor
+            temp = 52.1
             label = "?°C" if temp is None else f"{temp:.1f}°C"
             self.query_one(which, Static).update(f"{label}\n{thermometer(temp)}")
 
-    # ---- ejecución ---------------------------------------------------------
-    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
-        if event.option_list.id != "menu":
-                *[Option(item.name, id=item.cmd) for item in COMMANDS]
-            )
-
-    #Async function to run the command selected by the user
-    @work
-    async def run_command(self, selectedOption: int) -> None:
-        if 0 <= selectedOption < len(COMMANDS):
-            selectedItem = COMMANDS[selectedOption]
-        else:
-            return
-        idx = int(event.option.id)
-        f = FUNCTIONS[idx]
-        if f["ask"] == "text":
-            self.push_screen(TextPrompt(f["prompt"], f.get("placeholder", "")),
-                             lambda v: v and self.execute(idx, v))
-        elif f["ask"] == "choice":
-            self.push_screen(ChoicePrompt(f["prompt"], f["choices"]),
-                             lambda v: v and self.execute(idx, v))
-        else:
-            self.execute(idx)
-
     def reveal(self, idx: int) -> None:
-        """Muestra el panel Info y, si aplica, el indicador de esa función."""
         self.query_one("#info").display = True
         target = FUNCTIONS[idx]["gauge"]
-        for g in GAUGES:
-            self.query_one(g).display = g == target
+        for gauge in GAUGES:
+            self.query_one(gauge).display = gauge == target
         self.query_one("#gauges").display = target is not None
         if target:
             self.refresh_gauge(target)
 
-    def execute(self, idx: int, arg: str | None = None) -> None:
-        """Punto de enganche: aquí se llamará a la lógica real."""
-        f = FUNCTIONS[idx]
+    def _build_command(self, idx: int, arg: str | None = None) -> list[str]:
+        func = FUNCTIONS[idx]
+        script = func.get("script")
+        if script:
+            cmd = ["bash", script]
+            if arg:
+                cmd.append(arg)
+            return cmd
+        if arg:
+            resolved = "\n".join(
+                command.replace("<ip>", arg).replace("<nombre>", arg).replace("<archivo>", arg)
+                for command in func["cmds"]
+            )
+            return ["bash", "-lc", resolved]
+        return ["bash", "-lc", " && ".join(func["cmds"])]
+
+    async def run_function(self, idx: int, arg: str | None = None) -> None:
+        func = FUNCTIONS[idx]
         self.reveal(idx)
         log = self.query_one("#info", RichLog)
         log.clear()
-        log.write(f"[b]{idx + 1}. {f['name']}[/]")
+        log.write(f"[b]{idx + 1}. {func['name']}[/]")
         if arg:
             log.write(f"[{LEAF}]Entrada:[/] {escape(arg)}")
-        log.write("[dim]TODO: ejecutar y mostrar la salida real aquí.[/]")
+
+        command = self._build_command(idx, arg)
+        try:
+            result = await asyncio.to_thread(subprocess.run, command, capture_output=True, text=True, check=False)
+        except OSError as exc:
+            log.write(f"[bold red]Error:[/] {escape(str(exc))}")
+            return
+
+        output = result.stdout.strip() if result.returncode == 0 else (result.stderr or result.stdout).strip()
+        if not output:
+            output = "Comando ejecutado sin salida." if result.returncode == 0 else f"Comando finalizado con código {result.returncode}."
+        log.write(escape(output))
+
+    def _trigger_for_selected(self, idx: int, value: str | None) -> None:
+        if value is not None:
+            asyncio.create_task(self.run_function(idx, value))
+        elif FUNCTIONS[idx].get("ask") is None:
+            asyncio.create_task(self.run_function(idx))
+
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
+        if event.option_list.id != "menu":
+            return
+
+        idx = int(event.option.id or "0")
+        func = FUNCTIONS[idx]
+        ask = func.get("ask")
+
+        if ask == "text":
+            self.push_screen(
+                TextPrompt(func.get("prompt", "Introduce un valor."), func.get("placeholder", "")),
+                lambda value: self._trigger_for_selected(idx, value),
+            )
+        elif ask == "choice":
+            self.push_screen(
+                ChoicePrompt(func.get("prompt", "Elige una opción."), func.get("choices", [])),
+                lambda value: self._trigger_for_selected(idx, value),
+            )
+        else:
+            asyncio.create_task(self.run_function(idx))
 
 
 if __name__ == "__main__":
-    Raspfetch().run()
-        user_input = None
-        if selectedItem.input_required:
-            user_input = await self.push_screen_wait(
-                InputBox(selectedItem.prompt)
-            )
-            if user_input is None:
-                return
-
-        args = ["bash", selectedItem.cmd]
-        if user_input is not None:
-            args.append(user_input)
-
-        await self.push_screen(LoadingBox(f"Ejecutando {selectedItem.name}..."))
-        try:
-            result = await asyncio.to_thread(
-                subprocess.run, args, capture_output=True, text=True
-            )
-        except OSError as error:
-            output = f"No se pudo ejecutar el comando: {error}"
-        else:
-            output = result.stdout if result.returncode == 0 else result.stderr or result.stdout
-
-        await self.pop_screen()
-        self.push_screen(MessageBox(output))
-    #Event handler
-    @on(OptionList.OptionSelected)
-    def option_selected(self, event: OptionList.OptionSelected) -> None:
-        self.run_command(event.option_index)
-    
-
-RASPFETCH().run()
+    RASPFETCH().run()
