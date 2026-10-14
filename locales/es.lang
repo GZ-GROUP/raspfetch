@@ -1,0 +1,152 @@
+# Catálogo de mensajes de RASPFETCH - Español.
+# Formato: clave=texto. Usa %s para cada argumento y %% para un signo de porcentaje.
+# Las claves que falten aquí se toman de en.lang.
+language.name=Español
+
+# ---- Interfaz (main.py) ----
+app.subtitle=Herramienta de administración para Raspberry Pi · Integrantes: %s
+panel.menu=Acciones
+panel.description=Descripción
+panel.script=Script
+panel.commands=Comandos
+hint.navigate=navegar
+hint.run=ejecutar
+hint.language=idioma
+hint.quit=salir
+hint.text_dialog=enter aceptar · esc cancelar
+hint.directory_dialog=↑↓ carpeta · tab siguiente campo · enter aceptar · esc cancelar
+hint.permission_dialog=↑↓ archivo · tab botones · enter aceptar · esc cancelar
+hint.result_dialog=↑↓←→ desplazar · esc cerrar
+exit.name=Salir
+exit.description=Cierra la herramienta de forma controlada.
+button.create=Crear
+button.cancel=Cancelar
+button.close=Cerrar
+button.read_only=Solo lectura
+button.read_write=Lectura y escritura
+dialog.ip_prompt=IP del equipo a probar:
+dialog.directory_intro=Elige la carpeta destino y escribe el nombre de la nueva carpeta.
+dialog.destination=Destino:
+dialog.permission_intro=Elige un archivo y el permiso de su propietario.
+dialog.file=Archivo:
+result.running=Ejecutando…
+result.no_output=(sin salida)
+result.exit_code=La acción terminó con código %s.
+gauge.memory=Memoria en uso
+gauge.disk=Disco en uso (/)
+gauge.temperature=Temperatura
+gauge.no_sensor=Sensor no disponible
+gauge.no_data=Sin datos
+
+# ---- Acciones del menú ----
+feature1.name=Información del sistema
+feature1.description=Muestra el nombre del equipo, la versión del kernel y el tiempo de funcionamiento.
+feature2.name=Diagnóstico de memoria
+feature2.description=Consulta la memoria RAM total, utilizada y disponible.
+feature3.name=Diagnóstico de almacenamiento
+feature3.description=Muestra el espacio utilizado y disponible en los sistemas de archivos.
+feature4.name=Configuración de red
+feature4.description=Consulta las interfaces de red, sus direcciones IP y las rutas configuradas.
+feature5.name=Prueba de conectividad
+feature5.description=Solicita la IP de otro equipo de la LAN y comprueba si responde.
+feature6.name=Temperatura del procesador
+feature6.description=Muestra la temperatura en grados Celsius o indica que el sensor no está disponible.
+feature7.name=Procesos activos
+feature7.description=Muestra los procesos en ejecución y su consumo de recursos.
+feature8.name=Creación de directorios
+feature8.description=Solicita un nombre y crea una carpeta dentro del directorio de trabajo del proyecto.
+feature9.name=Configuración de permisos
+feature9.description=Permite elegir entre solo lectura o lectura y escritura para el propietario de un archivo. La herramienta crea test_file.txt para esta prueba.
+feature10.name=Informe de diagnóstico
+feature10.description=Guarda en diagnostic_report.txt un resumen del estado del equipo, con fecha, usuario y nombre del equipo.
+
+# ---- Scripts Bash: común ----
+error.prefix=Error
+error.outside_home=ejecuta la herramienta desde una carpeta dentro de %s (actual: %s).
+
+# ---- feature1.sh ----
+system.hostname=Nombre del equipo  : %s
+system.kernel=Versión del kernel : %s
+system.arch=Arquitectura       : %s
+system.uptime=Tiempo encendido   : %s
+system.boot=Encendido desde    : %s
+
+# ---- feature2.sh ----
+memory.total=Total      : %s MB
+memory.used=Utilizada  : %s MB de %s MB (%s%%)
+memory.available=Disponible : %s MB
+
+# ---- feature3.sh ----
+storage.root=Sistema de archivos raíz (/)
+storage.used=Utilizado  : %s de %s (%s)
+storage.available=Disponible : %s
+
+# ---- feature4.sh ----
+network.interfaces=== Interfaces y direcciones IP ==
+network.routes=== Rutas configuradas ==
+network.gateway=Puerta de enlace predeterminada: %s
+network.none=ninguna
+
+# ---- feature5.sh ----
+ping.missing_ip=no se indicó ninguna dirección IP.
+ping.invalid_ip="%s" no es una dirección IPv4 válida (ejemplo: 192.168.1.10).
+ping.reachable=Resultado: el equipo %s RESPONDE.
+ping.unreachable=Resultado: el equipo %s NO responde.
+
+# ---- feature6.sh ----
+temp.unavailable=Sensor de temperatura no disponible en este equipo.
+temp.value=Temperatura: %s °C
+temp.status=Estado     : %s
+temp.normal=normal
+temp.high=alta
+temp.critical=crítica (el procesador puede reducir su velocidad)
+
+# ---- feature7.sh ----
+process.count=Procesos en ejecución         : %s
+process.load=Carga promedio (1, 5, 15 min) : %s
+process.top_cpu=== Los 10 procesos con mayor consumo de CPU ==
+process.top_memory=== Los 5 procesos con mayor consumo de memoria ==
+
+# ---- feature8.sh ----
+directory.empty_name=el nombre de la carpeta no puede estar vacío.
+directory.invalid_name=nombre "%s" no válido. Usa solo letras (sin tildes ni ñ), números, '.', '-' o '_', sin espacios.
+directory.bad_parent=la carpeta destino debe existir dentro de %s.
+directory.exists=ya existe "%s".
+directory.failed=no se pudo crear la carpeta (¿hay permiso de escritura en el destino?).
+directory.created=Carpeta creada: %s
+
+# ---- feature9.sh ----
+permission.test_file_header=Archivo de prueba de permisos de RASPFETCH.
+permission.test_file_created=Creado el %s por %s.
+permission.test_file_modified=Modificado el %s.
+permission.invalid_mode=modo "%s" no válido. Usa "read" o "readwrite".
+permission.not_a_file="%s" no existe o no es un archivo regular.
+permission.outside_workdir=solo se pueden modificar archivos dentro de %s.
+permission.not_owner=no eres el propietario de "%s".
+permission.chmod_failed=no se pudieron cambiar los permisos.
+permission.change=== Cambio de permisos ==
+permission.before=Antes   : %s
+permission.after=Después : %s
+permission.octal=Octal   : %s
+permission.check=== Comprobación ==
+permission.read_allowed=Lectura   : PERMITIDA (se pudo leer el contenido)
+permission.read_denied=Lectura   : DENEGADA
+permission.write_allowed_test=Escritura : PERMITIDA (se agregó una línea al archivo)
+permission.write_denied_test=Escritura : DENEGADA (no se pudo modificar el archivo)
+permission.write_allowed=Escritura : PERMITIDA
+permission.write_denied=Escritura : DENEGADA
+permission.content=== Contenido de %s ==
+
+# ---- feature10.sh ----
+report.title=INFORME DE DIAGNÓSTICO - RASPFETCH
+report.date=Fecha   : %s
+report.user=Usuario : %s
+report.host=Equipo  : %s
+report.system=== Sistema ==
+report.memory=== Memoria ==
+report.storage=== Almacenamiento ==
+report.network=== Red ==
+report.temperature=== Temperatura ==
+report.processes=Procesos en ejecución: %s
+report.not_writable=no hay permiso de escritura sobre %s.
+report.saved=Informe guardado en: %s

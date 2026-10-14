@@ -1,105 +1,128 @@
 # RASPFETCH
 
-Herramienta de administración para Raspberry Pi. Permite consultar información del sistema,
-diagnosticar la conexión a la red local y realizar configuraciones básicas desde la terminal.
+Administration tool for the Raspberry Pi. It shows system information, diagnoses the
+connection to the local network and performs basic configuration from the terminal.
 
-**Integrantes:** Ian, Raúl
+**Team:** [iangl2](https://github.com/iangl2), [RAGG1911](https://github.com/RAGG1911)
 
-## Estructura
+## Structure
 
-| Archivo | Contenido |
+| File | Content |
 |---|---|
-| `main.py` | Menú interactivo (interfaz de texto con Textual). Ejecuta el script de cada acción y muestra su resultado. |
-| `feature1.sh` … `feature10.sh` | Un script Bash por acción. Cada uno define una función y la ejecuta. |
-| `requirements.txt` | Dependencias de Python para el menú. |
+| `main.py` | Interactive menu (Textual text interface). Runs each action's script and shows its output in a pop-up. |
+| `feature1.sh` … `feature10.sh` | One Bash script per action. Each one defines a function and runs it. |
+| `common.sh` | Code shared by the scripts: translations and helper functions. |
+| `i18n.py` | Translations for `main.py`. |
+| `locales/*.lang` | Message catalogs, one per language (`en` English, `es` Spanish). |
+| `requirements.txt` | Python dependencies for the menu. |
 
-Los scripts trabajan sobre el **directorio de trabajo**: la carpeta desde donde se ejecuta la
-herramienta. Debe estar dentro del directorio personal (`$HOME`) y no se necesita `sudo`.
+The scripts work on the **working directory**, which is the folder the tool is run from. It
+must be inside the home directory (`$HOME`). The tool does not need `sudo`.
 
-## Guía de ejecución
+## How to run it
 
-### 1. Instalar las dependencias (una sola vez)
+### 1. Install the dependencies (once)
 
-En la Raspberry Pi, con Internet:
+On the Raspberry Pi, with Internet access:
 
 ```bash
 python3 -m venv venv
 venv/bin/pip install -r requirements.txt
 ```
 
-Como el laboratorio no tiene Internet, se pueden descargar los paquetes en otro equipo y
-copiarlos a la Raspberry Pi (son paquetes de Python puro, sirven para cualquier arquitectura):
+The lab has no Internet access. In that case, download the packages on another computer
+and copy them to the Raspberry Pi. They are pure Python packages, so they work on any
+architecture:
 
 ```bash
-# En un equipo con Internet
-pip download -r requirements.txt -d paquetes
-# En la Raspberry Pi, después de copiar la carpeta "paquetes"
+# On a computer with Internet access
+pip download -r requirements.txt -d packages
+# On the Raspberry Pi, after copying the "packages" folder
 python3 -m venv venv
-venv/bin/pip install --no-index --find-links paquetes -r requirements.txt
+venv/bin/pip install --no-index --find-links packages -r requirements.txt
 ```
 
-### 2. Ejecutar
+### 2. Run
 
 ```bash
 cd ~/sistemas-operativos
 venv/bin/python main.py
 ```
 
-| Tecla | Acción |
+| Key | Action |
 |---|---|
-| `↑` `↓` | Moverse por el menú |
-| `Enter` | Ejecutar la acción seleccionada |
-| `Tab` | Cambiar de campo dentro de un diálogo |
-| `Esc` | Cerrar el panel de resultados o cancelar un diálogo |
-| `q` o la opción **0. Salir** | Salir de la herramienta |
+| `↑` `↓` | Move through the menu |
+| `Enter` | Run the selected action |
+| `l` | Switch language (English / Spanish) |
+| `Tab` | Move between fields inside a dialog |
+| `Esc` | Close the result window or cancel a dialog |
+| `q` or option **0. Exit** | Quit the tool |
 
-Cada script también se puede ejecutar por separado, por ejemplo:
+Each script can also be run on its own:
 
 ```bash
-bash feature5.sh 192.168.1.20          # prueba de conectividad
-bash feature8.sh mi_carpeta            # crea ./mi_carpeta
-bash feature9.sh archivo_prueba.txt lectura
+bash feature5.sh 192.168.1.20              # connectivity test
+bash feature8.sh my_folder                 # creates ./my_folder
+bash feature9.sh test_file.txt read        # owner: read only
+RASPFETCH_LANG=es bash feature1.sh         # output in Spanish
 ```
 
-## Acciones y comandos utilizados
+## Actions and commands
 
-| N.º | Acción | Script | Comandos | Función de los comandos |
+| # | Action | Script | Commands | What the commands do |
 |---|---|---|---|---|
-| 1 | Información del sistema | `feature1.sh` | `hostname`, `uname -r`, `uname -m`, `uptime -p`, `uptime -s` | Nombre del equipo, versión del kernel, arquitectura, tiempo encendido y hora de arranque. |
-| 2 | Diagnóstico de memoria | `feature2.sh` | `free -m`, `free -h`, `awk` | RAM total, utilizada y disponible; `awk` extrae los valores para calcular el porcentaje. |
-| 3 | Diagnóstico de almacenamiento | `feature3.sh` | `df -hP /`, `df -h -x tmpfs …` | Uso del sistema de archivos raíz y de los demás sistemas de archivos reales. |
-| 4 | Configuración de red | `feature4.sh` | `ip -br address`, `ip route` | Interfaces con su estado y direcciones IP, rutas y puerta de enlace. |
-| 5 | Prueba de conectividad | `feature5.sh` | `ping -c 4 -W 2 <ip>` | Envía 4 paquetes a otro equipo de la LAN; antes valida que la IP tenga formato IPv4. |
-| 6 | Temperatura del procesador | `feature6.sh` | `vcgencmd measure_temp`, `/sys/class/thermal/thermal_zone0/temp` | Temperatura en °C; si no hay sensor lo indica. |
-| 7 | Procesos activos | `feature7.sh` | `ps -eo pid,user,%cpu,%mem,comm --sort=-%cpu`, `/proc/loadavg` | Número de procesos, carga promedio y procesos que más CPU y memoria consumen. |
-| 8 | Creación de directorios | `feature8.sh` | `mkdir`, `realpath`, `ls -ld` | Crea la carpeta dentro del directorio de trabajo (se elige el destino en un árbol). |
-| 9 | Configuración de permisos | `feature9.sh` | `chmod u+r,u-w`, `chmod u+rw`, `ls -l`, `stat -c %a` | Solo lectura o lectura y escritura para el propietario, y comprobación de ambos permisos. |
-| 10 | Informe de diagnóstico | `feature10.sh` | `date`, `whoami`, `hostname` y los scripts 1, 2, 3, 4 y 6 | Guarda el resumen en `informe_diagnostico.txt`. |
+| 1 | System information | `feature1.sh` | `hostname`, `uname -r`, `uname -m`, `uptime -p`, `uptime -s` | Hostname, kernel version, architecture, uptime and boot time. |
+| 2 | Memory check | `feature2.sh` | `free -m`, `free -h`, `awk` | Total, used and available RAM. `awk` extracts the values used to compute the percentage. |
+| 3 | Storage check | `feature3.sh` | `df -hP /`, `df -h -x tmpfs …` | Usage of the root file system and of the other real file systems. |
+| 4 | Network configuration | `feature4.sh` | `ip -br address`, `ip route` | Interfaces with their state and IP addresses, routes and the default gateway. |
+| 5 | Connectivity test | `feature5.sh` | `ping -c 4 -W 2 <ip>` | Sends 4 packets to another host on the LAN, after checking that the IPv4 address is valid. |
+| 6 | CPU temperature | `feature6.sh` | `vcgencmd measure_temp`, `/sys/class/thermal/thermal_zone0/temp` | Temperature in °C. If there is no sensor, the script says so. |
+| 7 | Active processes | `feature7.sh` | `ps -eo pid,user,%cpu,%mem,comm --sort=-%cpu`, `/proc/loadavg` | Number of processes, load average and the processes using the most CPU and memory. |
+| 8 | Create directory | `feature8.sh` | `mkdir`, `realpath`, `ls -ld` | Creates the folder inside the working directory. The parent folder is chosen in a tree. |
+| 9 | File permissions | `feature9.sh` | `chmod u+r,u-w`, `chmod u+rw`, `ls -l`, `stat -c %a` | Sets the owner to read only or to read and write, then checks both permissions. |
+| 10 | Diagnostic report | `feature10.sh` | `date`, `whoami`, `hostname` and scripts 1, 2, 3, 4 and 6 | Saves the summary to `diagnostic_report.txt`. |
 
-## Validaciones
+## Input validation
 
-- **Prueba de conectividad:** rechaza una IP vacía o con formato incorrecto (por ejemplo `300.1.1.1`).
-- **Creación de directorios:** rechaza nombres vacíos, con espacios o caracteres especiales, `.` y `..`,
-  carpetas que ya existen y destinos fuera del directorio de trabajo.
-- **Configuración de permisos:** rechaza carpetas, archivos fuera del directorio de trabajo,
-  archivos de otro propietario y modos que no sean `lectura` o `escritura`.
-- Las acciones que crean archivos o carpetas se niegan a ejecutarse fuera de `$HOME`.
+- **Connectivity test:** rejects an empty IP address or one with a wrong format (for example `300.1.1.1`).
+- **Create directory:** rejects empty names, names with spaces or special characters, `.` and `..`,
+  folders that already exist and parent folders outside the working directory.
+- **File permissions:** rejects folders, files outside the working directory, files owned by
+  another user and any mode other than `read` or `readwrite`.
+- Actions that create files or folders refuse to run outside `$HOME`.
 
-## Prueba de permisos
+## Permission test
 
-La acción 9 crea `archivo_prueba.txt` en el directorio de trabajo, si todavía no existe, y lo
-selecciona por defecto. En el árbol se puede elegir otro archivo.
+Action 9 creates `test_file.txt` in the working directory if it does not exist yet, and
+selects it by default. Another file can be picked in the tree.
 
-1. Elegir **Solo lectura**: `ls -l` muestra `-r--…`. Se puede leer el contenido, pero al
-   intentar agregar una línea la escritura se reporta como **DENEGADA**.
-2. Elegir **Lectura y escritura**: `ls -l` muestra `-rw-…`. La herramienta agrega la línea
-   `Modificado el …` y muestra el contenido para comprobarlo.
+1. Choose **Read only**: `ls -l` shows `-r--…`. The content can be read, but the attempt to
+   append a line is reported as **DENIED**.
+2. Choose **Read and write**: `ls -l` shows `-rw-…`. The tool appends a `Modified on …` line
+   and shows the content as proof.
 
-Para comprobarlo manualmente:
+To check it by hand:
 
 ```bash
-cat archivo_prueba.txt               # lectura
-echo "prueba" >> archivo_prueba.txt  # escritura: "Permiso denegado" si es solo lectura
+cat test_file.txt                  # read
+echo "test" >> test_file.txt       # write: "Permission denied" when read only
 ```
 
-Con otros archivos solo se consulta el permiso (`[ -w archivo ]`) para no modificar su contenido.
+For any other file the tool only checks the permission (`[ -w file ]`), so the content is
+never modified.
+
+## Translations (i18n)
+
+Every message lives in `locales/<language>.lang`. Both the Bash scripts (`common.sh`) and
+the menu (`i18n.py`) read these files:
+
+```
+# key=text   (%s = argument, %% = literal percent sign)
+ping.reachable=Result: host %s REPLIES.
+```
+
+- The language is chosen with the `RASPFETCH_LANG` variable (`en` by default). Inside the
+  menu, the `l` key switches it.
+- Any key missing in a language falls back to English (`en.lang`).
+- To add a language, copy `en.lang` to `locales/<code>.lang` and translate the text after `=`.
+  The new language then appears automatically in the `l` key's rotation.

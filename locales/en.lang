@@ -1,0 +1,153 @@
+# RASPFETCH message catalog - English (default language).
+# Format: key=text. Use %s for each argument and %% for a literal percent sign.
+# Shared by main.py (through i18n.py) and the Bash scripts (through common.sh).
+# Any key missing in another language falls back to this file.
+language.name=English
+
+# ---- Interface (main.py) ----
+app.subtitle=Raspberry Pi administration tool · Team: %s
+panel.menu=Actions
+panel.description=Description
+panel.script=Script
+panel.commands=Commands
+hint.navigate=navigate
+hint.run=run
+hint.language=language
+hint.quit=quit
+hint.text_dialog=enter accept · esc cancel
+hint.directory_dialog=↑↓ folder · tab next field · enter accept · esc cancel
+hint.permission_dialog=↑↓ file · tab buttons · enter accept · esc cancel
+hint.result_dialog=↑↓←→ scroll · esc close
+exit.name=Exit
+exit.description=Closes the tool in a controlled way.
+button.create=Create
+button.cancel=Cancel
+button.close=Close
+button.read_only=Read only
+button.read_write=Read and write
+dialog.ip_prompt=IP address of the host to test:
+dialog.directory_intro=Choose the parent folder and type the name of the new folder.
+dialog.destination=Destination:
+dialog.permission_intro=Choose a file and the permission for its owner.
+dialog.file=File:
+result.running=Running…
+result.no_output=(no output)
+result.exit_code=The action finished with exit code %s.
+gauge.memory=Memory in use
+gauge.disk=Disk in use (/)
+gauge.temperature=Temperature
+gauge.no_sensor=Sensor not available
+gauge.no_data=No data
+
+# ---- Menu actions ----
+feature1.name=System information
+feature1.description=Shows the hostname, the kernel version and the uptime.
+feature2.name=Memory check
+feature2.description=Shows total, used and available RAM.
+feature3.name=Storage check
+feature3.description=Shows used and available space on the file systems.
+feature4.name=Network configuration
+feature4.description=Shows the network interfaces, their IP addresses and the configured routes.
+feature5.name=Connectivity test
+feature5.description=Asks for the IP address of another host on the LAN and checks whether it replies.
+feature6.name=CPU temperature
+feature6.description=Shows the temperature in degrees Celsius, or reports that the sensor is not available.
+feature7.name=Active processes
+feature7.description=Shows the running processes and their resource usage.
+feature8.name=Create directory
+feature8.description=Asks for a name and creates a folder inside the project working directory.
+feature9.name=File permissions
+feature9.description=Sets a file's owner permission to read only or read and write. The tool creates test_file.txt for this test.
+feature10.name=Diagnostic report
+feature10.description=Saves a summary of the system status, including date, user and hostname, to diagnostic_report.txt.
+
+# ---- Bash scripts: shared ----
+error.prefix=Error
+error.outside_home=run the tool from a folder inside %s (current: %s).
+
+# ---- feature1.sh ----
+system.hostname=Hostname       : %s
+system.kernel=Kernel version : %s
+system.arch=Architecture   : %s
+system.uptime=Uptime         : %s
+system.boot=Up since       : %s
+
+# ---- feature2.sh ----
+memory.total=Total     : %s MB
+memory.used=Used      : %s MB of %s MB (%s%%)
+memory.available=Available : %s MB
+
+# ---- feature3.sh ----
+storage.root=Root file system (/)
+storage.used=Used      : %s of %s (%s)
+storage.available=Available : %s
+
+# ---- feature4.sh ----
+network.interfaces=== Interfaces and IP addresses ==
+network.routes=== Configured routes ==
+network.gateway=Default gateway: %s
+network.none=none
+
+# ---- feature5.sh ----
+ping.missing_ip=no IP address was given.
+ping.invalid_ip="%s" is not a valid IPv4 address (example: 192.168.1.10).
+ping.reachable=Result: host %s REPLIES.
+ping.unreachable=Result: host %s does NOT reply.
+
+# ---- feature6.sh ----
+temp.unavailable=Temperature sensor not available on this device.
+temp.value=Temperature: %s °C
+temp.status=Status     : %s
+temp.normal=normal
+temp.high=high
+temp.critical=critical (the CPU may slow itself down)
+
+# ---- feature7.sh ----
+process.count=Running processes          : %s
+process.load=Load average (1, 5, 15 min) : %s
+process.top_cpu=== Top 10 processes by CPU usage ==
+process.top_memory=== Top 5 processes by memory usage ==
+
+# ---- feature8.sh ----
+directory.empty_name=the folder name cannot be empty.
+directory.invalid_name=invalid name "%s". Use only letters (no accents), digits, '.', '-' or '_', without spaces.
+directory.bad_parent=the parent folder must exist inside %s.
+directory.exists="%s" already exists.
+directory.failed=could not create the folder (is the parent folder writable?).
+directory.created=Folder created: %s
+
+# ---- feature9.sh ----
+permission.test_file_header=RASPFETCH permissions test file.
+permission.test_file_created=Created on %s by %s.
+permission.test_file_modified=Modified on %s.
+permission.invalid_mode=invalid mode "%s". Use "read" or "readwrite".
+permission.not_a_file="%s" does not exist or is not a regular file.
+permission.outside_workdir=only files inside %s can be changed.
+permission.not_owner=you are not the owner of "%s".
+permission.chmod_failed=could not change the permissions.
+permission.change=== Permission change ==
+permission.before=Before : %s
+permission.after=After  : %s
+permission.octal=Octal  : %s
+permission.check=== Verification ==
+permission.read_allowed=Read  : ALLOWED (the content could be read)
+permission.read_denied=Read  : DENIED
+permission.write_allowed_test=Write : ALLOWED (a line was appended to the file)
+permission.write_denied_test=Write : DENIED (the file could not be modified)
+permission.write_allowed=Write : ALLOWED
+permission.write_denied=Write : DENIED
+permission.content=== Content of %s ==
+
+# ---- feature10.sh ----
+report.title=DIAGNOSTIC REPORT - RASPFETCH
+report.date=Date     : %s
+report.user=User     : %s
+report.host=Hostname : %s
+report.system=== System ==
+report.memory=== Memory ==
+report.storage=== Storage ==
+report.network=== Network ==
+report.temperature=== Temperature ==
+report.processes=Running processes: %s
+report.not_writable=no write permission on %s.
+report.saved=Report saved to: %s
